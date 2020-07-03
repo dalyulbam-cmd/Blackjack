@@ -1,11 +1,16 @@
 #from time import sleep
+#from cs1media import * 
 from cs1graphics import *
-from cs1media import * 
 import random
 import csv
 
+"""
+If we choose to bring images through cs1graphics.Image(), then
+There is no necessary to use cs1media module above. 
+"""
+
 #######################################################
-#######################################################
+################## Text Image Location #####################
 #######################################################
 
 text_position_11 = (1000,200)
@@ -15,8 +20,17 @@ text_position_22 = (1000,700)
 text_position_31 = (1500,200)
 text_position_32 = (1500,300)
 
+"""
+text_position_11 lets you know the total value of player.
+text_position_12 show whether player wins or loses
+text_position_21 lets you know the total value of dealer.
+text_position_22 show whether dealer goes over 21 and get bursted.
+text_position_31 and 32 displays an amount of account and betting money.
+
+"""
+
 #######################################################
-#######################################################
+################## Basic Concepts #########################
 #######################################################
 
 
@@ -31,43 +45,77 @@ shift = 30
 
 
 #######################################################
+#################### Game operators #######################
 #######################################################
-#######################################################
+
+now_game = 1
+now_sampling = 0
+
+###########################
 
 record = []
 information = []
-now_game = 0
+
 Game_try = 30
 Turning_point = 10
-sampling_number = 2
-now_sampling = 0
+sampling_number = 100
+
+###########################
 
 def initialize():
-    global now_game
-    global bet_money
-    global record
-    global account 
-    global now_sampling
-    
+    global now_game, bet_money, record, account, now_sampling, information
+
+    information = []
     record = []
     now_game = 1
     bet_money = minimum_bet
     account = 0
     now_sampling += 1 
 
+def game_regulator():
+
+    global now_game
+
+    if now_game < Game_try : 
+        now_game += 1
+        return True
+    else:
+        now_game = 0
+        return False
+        
 #######################################################
+####################### Money ##########################
 #######################################################
-#######################################################
+
+"""
+betting money takes infromation from document of Gangwon Land casino
+"""
 
 account = 0
 bet_money = 1000
 minimum_bet = 1000
 maximum_bet = 300000
 
+def Banking(winning_point,bet_money,account):
+    if winning_point == "win":
+        account += bet_money
+    elif winning_point == "lose":
+        account -= bet_money
+    else :
+        pass
+    return account 
 
 #######################################################
+###################### Math ############################
 #######################################################
-#######################################################
+
+"""
+'most_frequent' function gets a list argument and
+returns an element which is the most frequent in the elements and besides,
+the biggest one among the most frequent.
+
+It helps to find out which number is preferred by player. 
+"""
 
 
 def most_frequent(the_list):
@@ -96,7 +144,7 @@ def most_frequent(the_list):
     return maxkey
 
 #######################################################
-#######################################################
+################## Class : Card ############################
 #######################################################
 
 class Card(object):
@@ -120,11 +168,10 @@ class Card(object):
             article = "a "
         else : 
             article = ""
-
         return article + str(self.face) + "  of  " + self.suit
     
     def value(self, exception=False):
-    
+        # if an Ace card turns to the exception, then it counts as 1 not to 11. 
         try :
             #!        
             return int(self.face)
@@ -138,13 +185,20 @@ class Card(object):
                 return 10
 
 #######################################################
+################# Class : Card Image ########################
 #######################################################
-#######################################################
+
+"""
+Consider a case that  didn't make Card_image class and
+handle Layer() as instance attributes, It could be imagined that
+there would be numorous attempts to build layers for locating cards. 
+
+"""
 
 class Card_Image(object):
 
     def __init__(self,card):
-
+        # Information tranferred from Card class to Card_Image class...
         self.graphic = Layer()
         self.suit = card.suit
         self.face = card.face
@@ -156,12 +210,17 @@ class Card_Image(object):
         return self.suit + "_" + str(self.face) + ".png"
     
     def draw(self):
-
         if self.state == True:
             self.img = Image(self.path+str(self))
         else :
             self.img = Image(self.path+"Back.png")
         self.graphic.add(self.img)
+
+
+"""
+draw_card function was designed to be remodeled after in case for
+new challenge making... for example, 1:3 blackjack.
+"""
 
 def draw_card(player,dealer):
 
@@ -182,9 +241,19 @@ def draw_card(player,dealer):
         
 
 #######################################################
-#######################################################
+#################### Class : Deck ##########################
 #######################################################
 
+"""
+It was truely uncomfortable to find some values written in those ways
+    : hand_value(player.cards[:-1]), or 
+    : dealer.cards.append(new_card)
+
+So this class contains functions like __len__, append, pop to shorten sentences. 
+    : hand_value(player.cards[:-1])  -> player.hand_but(1)
+    : dealer.cards.append(new_card) -> dealer.append(new_card)
+    
+"""
 
 class deck(object):
 
@@ -233,7 +302,8 @@ class deck(object):
         return self.cards.pop()
 
     def hand_but(self,number):
-
+        # build a 'new deck' declared by own class
+        # and through away a few cards amount of the argument, number.
         new_deck = deck()
         new_deck.cards = self.cards
         for i in range(number):
@@ -242,11 +312,14 @@ class deck(object):
         return new_value
 
 #######################################################
-#######################################################
+##################### Strategy ###########################
 #######################################################
 
-game_switch = 1
-betting_switch = 1 
+game_switch = 2
+betting_switch = 2 
+
+#########################################
+#########################################
 
 def ask_yesno(prompt):
 
@@ -259,6 +332,23 @@ def ask_yesno(prompt):
         else :
             print("I beg your pardon!")
 
+#########################################
+#########################################
+
+
+"""
+Now, here are the switches for game strategies and betting strategies.
+
+game_switch = 0 -> Input the True(hit) and False(Stay) by myself.
+game_switch = 1 -> Automatic. It considers the hand value of player and dealer.
+game_switch = 2 -> Automatic. It excludes the case frequently defeated before.
+
+betting_switch = 0 -> Only minimum betting is allowed
+betting_switch = 1 -> Martingale betting before the maximum betting
+betting_swithc =2 -> Passionists. Consecutive winning bring the player to betting X5 
+
+"""
+
 def game_strategy(player,dealer):
 
     global game_switch 
@@ -267,7 +357,7 @@ def game_strategy(player,dealer):
     elif game_switch == 1:
         return game_strategy_1(player,dealer)
     elif game_switch == 2:
-        return game_strategy_21(player,dealer,information)
+        return game_strategy_21(player,dealer)
     else :
         return game_strategy_22(player,dealer)
 
@@ -283,6 +373,10 @@ def betting_strategy(record):
         return betting_strategy_2(record)
 
 
+#########################################
+#########################################
+
+
 def game_strategy_1(player,dealer):
 
     switch = True 
@@ -296,17 +390,20 @@ def game_strategy_1(player,dealer):
     else:
         return False  
 
-def game_strategy_21(player,dealer,information):
+def game_strategy_21(player,dealer):
 
     global now_game
-
-    player_worst , dealer_best = information 
+    global information 
+    
     switch1 = 0 
     switch2 = False  
     switch3 = False    
 
     if now_game < 11: 
         return game_strategy_1(player,dealer)
+
+    Player_worst = information[0]
+    Dealer_Lucky = information[1]
 
     if 11 < player.hand() < 17: 
         switch1 = 1
@@ -315,22 +412,25 @@ def game_strategy_21(player,dealer,information):
     else:
         pass 
 
-    if 1< dealer.cards[1] < 7:
+    if 1< dealer.cards[1].value() < 7:
         switch2 = True  
-    if player.hand() >= player_worst :
+    if player.hand() >= Player_worst :
         switch3 = True    
-    if dealer.cards[1] < dealer_best:
+    if dealer.cards[1].value() < Dealer_Lucky:
         swtich2 = False 
 
 
     if switch1 == 1 and switch2 :
         return False 
-    elif switch == 1 and switch3:  
+    elif switch1 == 1 and switch3:  
         return False 
     elif switch1 == 2:
         return False 
     else :
         return True   
+
+
+#########################################
 
 def betting_strategy_1(record):
 
@@ -350,34 +450,25 @@ def betting_strategy_1(record):
     return bet_money
 
 def betting_strategy_2(record):
+
+    (winning_point,bet_money,account,player_info,dealer_info)=tuple(record[-1])
+    
     if winning_point == "lose":
         bet_money *= 2
-    elif winning_point == "win" :
-        copy = record[:]
-        copy.reverse()
-        for i in range(len(copy)):
-            if copy[i][0] =="lose":
-                bet_money = minimum_bet
-                break 
-            else :
-                continue
-            
+        if bet_money > maximum_bet:
+            bet_money = maximum_bet    
+    elif  winning_point == "win":
+        bet_money = minimum_bet
+        if len(record) >1 and record[-2][0] == "win":
+            bet_money = minimum_bet *5
+        if bet_money >= maximum_bet and account < maximum_bet:
+            bet_money = maximum_bet
     else:
-        pass
+        pass        
     return bet_money 
 
-def Banking(winning_point,bet_money,account):
-    if winning_point == "win":
-        account += bet_money
-    elif winning_point == "lose":
-        account -= bet_money
-    else :
-        pass
-    return account 
-
-
 #######################################################
-#######################################################
+################ Message and information #####################
 #######################################################
 
 def print_on_canvas(prompt,location):
@@ -394,17 +485,6 @@ def print_on_canvas(prompt,location):
     sentence.moveTo(x,y)
     black_board.add(sentence)
 
-def game_regulator():
-
-    global now_game
-
-    if now_game < Game_try : 
-        now_game += 1
-        return True
-    else:
-        now_game = 0
-        return False
-        
 def recording(record):
 
     global now_sampling
@@ -432,12 +512,24 @@ def recording(record):
         writer.writerow([Rate,Player_worst,Dealer_Lucky])
     csv_record.close
     
-def sub_record(information):
+def sub_recording(record):
 
-    return 0
+    player_info = []
+    dealer_info = []
+    
+    for data in record:
+        if data[0] == "lose":
+            if 11< data[3] :
+                player_info.append(data[3])
+            if data[4] < 7 :
+                dealer_info.append(data[4])        
+    Player_worst = most_frequent(player_info)
+    Dealer_Lucky = most_frequent(dealer_info)
+        
+    return [Player_worst,Dealer_Lucky]
 
 #######################################################
-#######################################################
+################## Main game operator ######################
 #######################################################
 
 
@@ -445,6 +537,7 @@ def main_game():
 
     global bet_money
     global account
+    global information 
 
     table = deck()
     player = deck()
@@ -533,20 +626,18 @@ def main_game():
                     winning_point = "draw"
                     print_on_canvas("You have a tie!",text_position_12)
 
-        player_sample = player.cards[:-1]
         account = Banking(winning_point,bet_money,account)
-        record.append([winning_point,bet_money,account,player.hand_but(1),dealer.cards[1].value()])
+        record.append([winning_point,bet_money,account,player.hand_but(1),dealer.cards[1].value()])   
         if not game_regulator():
             break
         if game_switch == 0 and (not ask_yesno("\nPlay another round? (y/n) ")):
             black_board.close()
             break
-            
-
-        
-                    
+        if now_game == Turning_point:
+            information = sub_recording(record) 
+              
 #######################################################
-#######################################################
+###################### Action ###########################
 #######################################################
 
 for i in range(sampling_number):
