@@ -105,8 +105,8 @@ Dealer_Lucky = 4 이면 딜러가 4 이하에서 이길 확률이 높다고 생�
 
 미치광이 전략, '운수 좋은 날 베팅'으로 플레이한 14번 가상의 플레이어의 전적  
 --------------------------------
-.. image::https://github.com/dalyulbam-cmd/Blackjack/blob/master/Sample_Image/G3B2%20Player.png
-
+.. image:: https://github.com/dalyulbam-cmd/Blackjack/blob/master/Sample_Image/G3B2%20Player.png
+  width = 700
 
 --------------------------------------------------------------------
 프로그램 내부 전략모음 : 베팅 전략 
